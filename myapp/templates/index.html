@@ -11,7 +11,13 @@
 <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT" crossorigin="anonymous"></script> 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="./dropzone.js"></script>
+<script>
+var loadFile = function(event) {
+    var image = document.getElementById('output');
+    image.src = URL.createObjectURL(event.target.files[0]);
+};
+</script>
 
 </head>
 
@@ -57,29 +63,43 @@
         <!--chart descriptions-->       
         <div id="middle-info" class="mt-3">
 
-            <h2 id="tag-line">Dog Breed Classifier</h2>
             <h4 id="tag-line" class="text-muted">Sub-header</h4>
             
         </div>
         
         <!--charts-->       
         <div id="charts" class="container mt-3 text-center">
-                    
-            <!--top two charts-->       
+
             <div class="row">
                 <div class="col-6">
-                    <div>
-                        <form method="post" enctype="multipart/form-data">
-                          <label>Choose an Image File (*.jpg) from your harddrive.
-                            <input name="file" type="file" size="50" accept="image/jpeg">
-                          </label>
-                          <button>Predict Dog Breed for chosen Image</button>
-                        </form>
-                    </div>
-                    <div id="pred">{{ preds }}</div>
+                    <form action="{{ url_for('predict') }}" method="POST"
+                                                enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="fileupload">Select Files:</label>
+                            <input type="file" accept="image/*" name="file[]" multiple="" id='fileupload' onchange="loadFile(event)">
+                            <p class="help-block">Image types only. Image will be converted to
+                            proper shape.<br/>Also allow for time for image upload and predictions.
+                            </p>
+                            <label class="btn btn-primary">
+                                Upload <input type="submit" value="Predict" style="display:
+                                none;">
+                            </label>
+                        </div>
+                    </form>
                 </div>
             </div>
 
+                <div class="row">
+                    <div class="col-6">
+                    <p><img id="output" width="200" /></p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-6">
+                    <p>{{ preds }}</p>
+                    </div>
+                </div>
         
         </div>
     <div>
@@ -97,7 +117,6 @@
         // plots the figure with id
         // id much match the div id above in the html
         var preds = {{preds | safe}};
-        var image = {{ img_path | safe }}
 
     </script>
     
