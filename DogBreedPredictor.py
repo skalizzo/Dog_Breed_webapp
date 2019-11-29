@@ -1,15 +1,25 @@
-from keras.models import load_model
-from keras.applications.resnet50 import ResNet50, preprocess_input, decode_predictions
-from keras.preprocessing import image
+from tensorflow.keras.models import load_model
+from tensorflow.keras.applications.resnet50 import ResNet50, preprocess_input, decode_predictions
+from tensorflow.keras.preprocessing import image
 from keras import backend as K
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+print('comp mode on')
+tf.disable_v2_behavior()
+
+# import keras.backend.tensorflow_backend as tb
+# tb._SYMBOLIC_SCOPE.value = True
 
 import pickle
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 
+print('session start')
+sess = tf.Session()
+graph = tf.get_default_graph()
+model = load_model('saved_models/Resnet50_model.h5', compile=False)
 
+print('loading class')
 class DogBreedPredictor_v2():
     """
     this class contains every function that is needed for our dog breed prediction
@@ -17,13 +27,16 @@ class DogBreedPredictor_v2():
 
     def __init__(self):
         # load list of dog names
-        K.clear_session()
-        tf.compat.v1.reset_default_graph()
-        global model
+        #tf.compat.v1.reset_default_graph()
+        #K.clear_session()
+        #init_op = tf.compat.v1.global_variables_initializer()
+        #tf.reset_default_graph()
+
+        K.set_session(sess)
         self.dog_names = pickle.load(open("saved_models/dog_names.p", "rb"))
-        model = load_model('saved_models/Resnet50_model.h5')
-        global graph
         graph = tf.get_default_graph()
+
+
 
     def getPredictions(self, img):
         """
@@ -31,10 +44,12 @@ class DogBreedPredictor_v2():
         or something else;
         if it is a dog it tries to predict its breed
         """
-        print('getting predictions')
         predictions = []
-        K.clear_session()
+        global graph
+        global model
+        global sess
         with graph.as_default():
+            K.set_session(sess)
             breed, confidence = self.Resnet50_predict_breed(img)
             breed = str(breed).split('.')[-1]
             #K.clear_session()
@@ -52,10 +67,16 @@ class DogBreedPredictor_v2():
         uses our Resnet50 model to make a dog-breed-prediction for an image
         """
         # extract bottleneck features
-        print(f'extracting bottleneck feature for {img_path}')
+        global graph
+        global model
+        global sess
         with graph.as_default():
+            K.set_session(sess)
             bottleneck_feature = self._extract_Resnet50(self._path_to_tensor(img_path))
             # obtain predicted vector
+            print(bottleneck_feature.shape)  # returns (1, 2048)
+            bottleneck_feature = np.expand_dims(bottleneck_feature, axis=0)
+            bottleneck_feature = np.expand_dims(bottleneck_feature, axis=0)
 
             predicted_vector = model.predict(bottleneck_feature, batch_size=1, verbose=0)
             confidence = round(np.max(predicted_vector) * 100, 2)
@@ -76,8 +97,13 @@ class DogBreedPredictor_v2():
         return np.expand_dims(x, axis=0)
 
     def _extract_Resnet50(self, tensor):
-        print(tensor)
-        return ResNet50(weights='imagenet', include_top=False).predict(preprocess_input(tensor))
+        global graph
+        global model
+        global sess
+        with graph.as_default():
+            K.set_session(sess)
+            prediction = ResNet50(weights='imagenet', include_top=False, pooling="avg", input_shape=(224, 224, 3)).predict(preprocess_input(tensor))
+            return prediction
 
     def _face_detector(self, img_path):
         """
@@ -93,7 +119,11 @@ class DogBreedPredictor_v2():
         """
         returns "True" if a dog is detected in the image stored at img_path
         """
+        global graph
+        global model
+        global sess
         with graph.as_default():
+            K.set_session(sess)
             img = preprocess_input(self._path_to_tensor(img_path))
             prediction = np.argmax(ResNet50(weights='imagenet').predict(img))
             return ((prediction <= 268) & (prediction >= 151))
@@ -101,5 +131,5 @@ class DogBreedPredictor_v2():
 
 if __name__ == '__main__':
     dbp = DogBreedPredictor_v2()
-    preds = dbp.getPredictions("C://work_local//Python//DataScientistND_Project6_Capstone_Project//Dog_Breed//sample_imgs//Bernhardiner.jpg")
+    preds = dbp.getPredictions("uploads/Afghan_hound_00116.jpg")
     print(preds)
