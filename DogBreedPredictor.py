@@ -1,8 +1,9 @@
 from tensorflow.keras.models import load_model
 from tensorflow.keras.applications.resnet50 import ResNet50, preprocess_input, decode_predictions
 from tensorflow.keras.preprocessing import image
-from keras import backend as K
+#from keras import backend as K
 import tensorflow.compat.v1 as tf
+from tensorflow.compat.v1.keras.backend import clear_session, set_session
 print('comp mode on')
 tf.disable_v2_behavior()
 
@@ -15,10 +16,14 @@ import cv2
 import matplotlib.pyplot as plt
 
 print('session start')
-sess = tf.Session()
-graph = tf.get_default_graph()
-model = load_model('saved_models/Resnet50_model.h5', compile=False)
 
+sess = tf.Session()
+
+graph = tf.get_default_graph()
+model = load_model('saved_models/Resnet50_model.h5', compile=True)
+init = tf.global_variables_initializer()
+#init = tf.initialize_all_variables()
+sess.run(init)
 print('loading class')
 class DogBreedPredictor_v2():
     """
@@ -26,17 +31,7 @@ class DogBreedPredictor_v2():
     """
 
     def __init__(self):
-        # load list of dog names
-        #tf.compat.v1.reset_default_graph()
-        #K.clear_session()
-        #init_op = tf.compat.v1.global_variables_initializer()
-        #tf.reset_default_graph()
-
-        K.set_session(sess)
         self.dog_names = pickle.load(open("saved_models/dog_names.p", "rb"))
-        graph = tf.get_default_graph()
-
-
 
     def getPredictions(self, img):
         """
@@ -49,7 +44,7 @@ class DogBreedPredictor_v2():
         global model
         global sess
         with graph.as_default():
-            K.set_session(sess)
+            set_session(sess)
             breed, confidence = self.Resnet50_predict_breed(img)
             breed = str(breed).split('.')[-1]
             #K.clear_session()
@@ -71,14 +66,16 @@ class DogBreedPredictor_v2():
         global model
         global sess
         with graph.as_default():
-            K.set_session(sess)
+            set_session(sess)
             bottleneck_feature = self._extract_Resnet50(self._path_to_tensor(img_path))
             # obtain predicted vector
             print(bottleneck_feature.shape)  # returns (1, 2048)
             bottleneck_feature = np.expand_dims(bottleneck_feature, axis=0)
             bottleneck_feature = np.expand_dims(bottleneck_feature, axis=0)
 
-            predicted_vector = model.predict(bottleneck_feature, batch_size=1, verbose=0)
+            #predicted_vector = model.predict(bottleneck_feature, batch_size=1, verbose=0)
+
+            predicted_vector = model.predict(bottleneck_feature, verbose=0)
             confidence = round(np.max(predicted_vector) * 100, 2)
             pred_label = self.dog_names[np.argmax(predicted_vector)]
             # return dog breed that is predicted by the model
@@ -101,7 +98,7 @@ class DogBreedPredictor_v2():
         global model
         global sess
         with graph.as_default():
-            K.set_session(sess)
+            set_session(sess)
             prediction = ResNet50(weights='imagenet', include_top=False, pooling="avg", input_shape=(224, 224, 3)).predict(preprocess_input(tensor))
             return prediction
 
@@ -123,7 +120,7 @@ class DogBreedPredictor_v2():
         global model
         global sess
         with graph.as_default():
-            K.set_session(sess)
+            set_session(sess)
             img = preprocess_input(self._path_to_tensor(img_path))
             prediction = np.argmax(ResNet50(weights='imagenet').predict(img))
             return ((prediction <= 268) & (prediction >= 151))
