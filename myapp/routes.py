@@ -19,52 +19,6 @@ dbp = DogBreedPredictor_v2()
 def index():
     return render_template('index.html')
 
-# @app.route('/predict', methods=['GET', 'POST'])
-# def predict():
-#     """File selection and display results
-#     """
-#     if request.method == 'POST' and 'file[]' in request.files:
-#         inputs = []
-#         files = request.files.getlist('file[]')
-#         for file_obj in files:
-#             # Check if no files uploaded
-#             if file_obj.filename == '':
-#                 if len(files) == 1:
-#                     return render_template('index.html', preds='Konnte noch keine Aussagen machen')
-#                 continue
-#             entry = {}
-#             entry.update({'filename': file_obj.filename})
-#             try:
-#                 img_bytes = io.BytesIO(file_obj.stream.getvalue())
-#                 entry.update({'data':
-#                               Image.open(
-#                                   img_bytes
-#                               )})
-#             except AttributeError:
-#                 img_bytes = io.BytesIO(file_obj.stream.read())
-#                 entry.update({'data':
-#                               Image.open(
-#                                   img_bytes
-#                               )})
-#             # keep image in base64 for later use
-#             img_b64 = base64.b64encode(img_bytes.getvalue()).decode()
-#             entry.update({'img': img_b64})
-#
-#             inputs.append(entry)
-#
-#         outputs = []
-#
-#         for input_ in inputs:
-#             # perform prediction
-#             out = dbp.getPredictions(input_['data'])
-#             outputs.append(out)
-#
-#
-#         return render_template('predict.html', preds=outputs[0])
-#
-#     # if no files uploaded
-#     return render_template('index.html')
-
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
@@ -81,10 +35,8 @@ def predict():
     """File selection and display results
     """
     if request.method == 'POST':
-        # check if the post request has the file part
-        print('predicting dog breed for image')
+        # double checking if a file has been uploaded
         if 'file[]' not in request.files:
-            #flash('No file part')
             return render_template('index.html', preds="Error predicting breed. file not found.")
         file = request.files['file[]']
         # if user does not select file, browser also
@@ -92,51 +44,17 @@ def predict():
         if file.filename == '':
             flash('No selected file')
             return redirect(request.url)
-        print(file.filename)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            print(url_for('uploaded_file', filename=filename))
-            print('starting prediction')
             prediction = dbp.getPredictions("." + url_for('uploaded_file', filename=filename))
             print(prediction)
-            print('rendering html')
-
-            #return redirect(url_for('uploaded_file', filename=filename))
-            #return render_template('index.html', preds=url_for('uploaded_file', filename=filename))
-            return render_template('index.html', preds=" ".join(prediction))
-
-
-    #
-    #
-    #
-    #
-    # if request.method == 'POST' and 'file[]' in request.files:
-    #     print
-    #     inputs = []
-    #     outputs = []
-    #     files = request.files.getlist('file[]')
-    #     file = request.files.ge
-    #     for file in files:
-    #         # Check if no files uploaded
-    #         if file.filename == '':
-    #             if len(files) == 1:
-    #                 return render_template('index.html', preds='Konnte noch keine Aussagen machen')
-    #             continue
-    #         entry = {}
-    #         entry.update({'filename': file.filename})
-    #
-    #         filename = file.filename
-    #         file.save(os.path.join("uploads", filename))
-    #         image_url = url_for('uploaded_file', filename=filename)
-    #
-    #         out = dbp.getPredictions(image_url)
-    #         outputs.append(out)
-    #
-    #
-    #
-    #
-    #     return render_template('predict.html', preds=outputs[0])
-
-    # if no files uploaded
+            display_image = url_for('uploaded_file', filename=filename)
+            print(display_image)
+            full_filename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            print(full_filename)
+            #full_filename = "C:\work_local\Python\DataScientistND_Project6_Capstone_Project\Dog_Breed_App\uploads\Afghan_hound_00149.jpg"
+            #return render_template("index.html", user_image=full_filename)
+            #return render_template('predict.html', preds=" ".join(prediction), predicted_image=display_image)
+            return render_template('index.html', preds=" ".join(prediction), displayed_image=display_image)
     return render_template('index.html')
