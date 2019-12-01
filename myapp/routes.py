@@ -81,15 +81,12 @@ def predict():
     """File selection and display results
     """
     if request.method == 'POST':
-        print('POST method')
         # check if the post request has the file part
-        print(request.files)
+        print('predicting dog breed for image')
         if 'file[]' not in request.files:
             #flash('No file part')
-            print('kein File vorhanden')
-            return redirect(request.url)
+            return render_template('index.html', preds="Error predicting breed. file not found.")
         file = request.files['file[]']
-        print(file)
         # if user does not select file, browser also
         # submit an empty part without filename
         if file.filename == '':
@@ -106,7 +103,8 @@ def predict():
             print('rendering html')
 
             #return redirect(url_for('uploaded_file', filename=filename))
-            return render_template('index.html', preds=url_for('uploaded_file', filename=filename))
+            #return render_template('index.html', preds=url_for('uploaded_file', filename=filename))
+            return render_template('index.html', preds=" ".join(prediction))
 
 
     #

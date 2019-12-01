@@ -1,9 +1,12 @@
-from tensorflow.keras.models import load_model
+from tensorflow.keras.models import load_model, model_from_json
 from tensorflow.keras.applications.resnet50 import ResNet50, preprocess_input, decode_predictions
 from tensorflow.keras.preprocessing import image
 #from keras import backend as K
 import tensorflow.compat.v1 as tf
 from tensorflow.compat.v1.keras.backend import clear_session, set_session
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, GlobalAveragePooling2D
+from tensorflow.keras.layers import Dropout, Flatten, Dense
+from tensorflow.keras.models import Sequential
 print('comp mode on')
 tf.disable_v2_behavior()
 
@@ -15,15 +18,34 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 
+class Model_cnn():
+    def __init__(self):
+        Resnet50_model = Sequential()
+        Resnet50_model.add(GlobalAveragePooling2D(input_shape=(1, 1, 2048)))
+        Resnet50_model.add(Dense(1000, activation='relu'))
+        Resnet50_model.add(Dropout(0.3))
+        Resnet50_model.add(Dense(133, activation='softmax'))
+        Resnet50_model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+        Resnet50_model.load_weights('saved_models/weights.best.Resnet50_v2.hdf5')
+
 print('session start')
 
 sess = tf.Session()
 
 graph = tf.get_default_graph()
-model = load_model('saved_models/Resnet50_model.h5', compile=True)
-init = tf.global_variables_initializer()
+
+with graph.as_default():
+    set_session(sess)
+    model = Model_cnn()
+    model = load_model('saved_models/Resnet50_model.h5', compile=True)
+#model = model_from_json('saved_models/model.Resnet50.json')
+
+#init = tf.global_variables_initializer()
 #init = tf.initialize_all_variables()
-sess.run(init)
+#init = tf.variables_initializer()
+
+#sess.run(init)
+#model.load_weights('saved_models/weights.best.Resnet50_v2.hdf5')
 print('loading class')
 class DogBreedPredictor_v2():
     """
@@ -55,6 +77,7 @@ class DogBreedPredictor_v2():
                 predictions.append(f'Woof! You look like a {breed}. I am {confidence}% sure.')
             else:
                 predictions.append("I am not sure what kind of species you are.")
+
         return predictions
 
     def Resnet50_predict_breed(self, img_path):
@@ -125,8 +148,19 @@ class DogBreedPredictor_v2():
             prediction = np.argmax(ResNet50(weights='imagenet').predict(img))
             return ((prediction <= 268) & (prediction >= 151))
 
+class Model_cnn():
+    def __init__(self):
+        Resnet50_model = Sequential()
+        Resnet50_model.add(GlobalAveragePooling2D(input_shape=(1, 1, 2048)))
+        Resnet50_model.add(Dense(1000, activation='relu'))
+        Resnet50_model.add(Dropout(0.3))
+        Resnet50_model.add(Dense(133, activation='softmax'))
+
+        Resnet50_model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+
+        Resnet50_model.load_weights('saved_models/weights.best.Resnet50_v2.hdf5')
 
 if __name__ == '__main__':
     dbp = DogBreedPredictor_v2()
-    preds = dbp.getPredictions("uploads/Afghan_hound_00116.jpg")
+    preds = dbp.getPredictions("uploads/Labrador_retriever_06455.jpg")
     print(preds)
