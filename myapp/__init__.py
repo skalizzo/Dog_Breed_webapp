@@ -1,9 +1,6 @@
-import os
-from flask import Flask, flash, request, redirect, url_for, Blueprint
-from werkzeug.utils import secure_filename
+from flask import Flask
 
 UPLOAD_FOLDER = '.\\uploads'
-#UPLOAD_FOLDER = '/static/uploads'
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER

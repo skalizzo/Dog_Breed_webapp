@@ -1,7 +1,6 @@
 from tensorflow.keras.models import load_model, model_from_json
 from tensorflow.keras.applications.resnet50 import ResNet50, preprocess_input, decode_predictions
 from tensorflow.keras.preprocessing import image
-#from keras import backend as K
 import tensorflow.compat.v1 as tf
 from tensorflow.compat.v1.keras.backend import clear_session, set_session
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, GlobalAveragePooling2D
@@ -10,13 +9,9 @@ from tensorflow.keras.models import Sequential
 
 tf.disable_v2_behavior()
 
-# import keras.backend.tensorflow_backend as tb
-# tb._SYMBOLIC_SCOPE.value = True
-
 import pickle
 import numpy as np
 import cv2
-import matplotlib.pyplot as plt
 
 class Model_cnn():
     def __init__(self):
@@ -28,10 +23,7 @@ class Model_cnn():
         Resnet50_model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
         Resnet50_model.load_weights('saved_models/weights.best.Resnet50_v2.hdf5')
 
-print('session start')
-
 sess = tf.Session()
-
 graph = tf.get_default_graph()
 
 with graph.as_default():
@@ -83,13 +75,11 @@ class DogBreedPredictor_v2():
         with graph.as_default():
             set_session(sess)
             bottleneck_feature = self._extract_Resnet50(self._path_to_tensor(img_path))
+            # reshaping bottleneck_features to match the input_shape of our model
+            bottleneck_feature = np.expand_dims(bottleneck_feature, axis=0)
+            bottleneck_feature = np.expand_dims(bottleneck_feature, axis=0)
+
             # obtain predicted vector
-            print(bottleneck_feature.shape)  # returns (1, 2048)
-            bottleneck_feature = np.expand_dims(bottleneck_feature, axis=0)
-            bottleneck_feature = np.expand_dims(bottleneck_feature, axis=0)
-
-            #predicted_vector = model.predict(bottleneck_feature, batch_size=1, verbose=0)
-
             predicted_vector = model.predict(bottleneck_feature, verbose=0)
             confidence = round(np.max(predicted_vector) * 100, 2)
             pred_label = self.dog_names[np.argmax(predicted_vector)]
@@ -141,18 +131,20 @@ class DogBreedPredictor_v2():
             return ((prediction <= 268) & (prediction >= 151))
 
 class Model_cnn():
+    """
+    creates our CNN model and loads the weights from the training session
+    """
     def __init__(self):
         Resnet50_model = Sequential()
         Resnet50_model.add(GlobalAveragePooling2D(input_shape=(1, 1, 2048)))
         Resnet50_model.add(Dense(1000, activation='relu'))
         Resnet50_model.add(Dropout(0.3))
         Resnet50_model.add(Dense(133, activation='softmax'))
-
         Resnet50_model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
-
         Resnet50_model.load_weights('saved_models/weights.best.Resnet50_v2.hdf5')
 
 if __name__ == '__main__':
+    #just for testing purposes
     dbp = DogBreedPredictor_v2()
     preds = dbp.getPredictions("uploads/Labrador_retriever_06455.jpg")
     print(preds)
