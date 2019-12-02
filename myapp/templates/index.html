@@ -21,7 +21,7 @@ var loadFile = function(event) {
 
 </head>
 
-<body onload="changeImage({{displayed_image | safe}})">
+<body onload="changeImage()">
 
 <!--navbar links-->     
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
@@ -64,38 +64,32 @@ var loadFile = function(event) {
                 <input type="file" accept="image/*" name="file[]" multiple="" id='fileupload' onchange="loadFile(event)">
                 <p class="help-block">The prediction will take a couple of seconds. Think of something nice while you wait.
                 </p>
+                    <!--uploaded image will be displayed here-->
+                <p><img id="output" width="250" /></p>
                 <label class="btn btn-primary btn-lg">
-                    Predict <input type="submit" value="Predict" style="display:
+                    Predict Dog Breed <input type="submit" value="Predict" style="display:
                     none;">
                 </label>
             </div>
         </form>
       </p>
-    <!--uploaded image will be displayed here-->
-    <p><img id="output" width="200" /></p>
-    <p><img id="displayed_imaged" width="200" /></p>
+
+    <p><img id="displayed_imaged" width="250" /></p>
     <p>{{ preds }}</p>
     </div>
 </div>
-
+<div class="container-fluid">
+    {% block body %}{% endblock %}
+</div>
 
 <!--footer section-->
 
 <div id="footer" class="container"></div>
  </body>
 <footer>
-    <script type="text/javascript">
-        var preds = {{preds | safe}};
-        var displayed_image = {{displayed_image | safe}};
-        var img_dsp = document.getElementById('display');
-        img_dsp.src = URL.createObjectURL(displayed_image);
-    </script>
 
-    <script type="text/javascript">
-    function changeImage(a) {
-        document.getElementById("displayed_image").src=a;
-    }
-</script>
+
+
     
 </footer>
 

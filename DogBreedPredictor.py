@@ -7,7 +7,7 @@ from tensorflow.compat.v1.keras.backend import clear_session, set_session
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, GlobalAveragePooling2D
 from tensorflow.keras.layers import Dropout, Flatten, Dense
 from tensorflow.keras.models import Sequential
-print('comp mode on')
+
 tf.disable_v2_behavior()
 
 # import keras.backend.tensorflow_backend as tb
@@ -38,15 +38,7 @@ with graph.as_default():
     set_session(sess)
     model = Model_cnn()
     model = load_model('saved_models/Resnet50_model.h5', compile=True)
-#model = model_from_json('saved_models/model.Resnet50.json')
 
-#init = tf.global_variables_initializer()
-#init = tf.initialize_all_variables()
-#init = tf.variables_initializer()
-
-#sess.run(init)
-#model.load_weights('saved_models/weights.best.Resnet50_v2.hdf5')
-print('loading class')
 class DogBreedPredictor_v2():
     """
     this class contains every function that is needed for our dog breed prediction

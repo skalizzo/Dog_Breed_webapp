@@ -1,10 +1,9 @@
 from werkzeug.utils import secure_filename
-
 from myapp import app
 import io
 import os
 import json, plotly
-from flask import Flask, render_template, request, url_for, flash, redirect, send_from_directory
+from flask import Flask, render_template, request, url_for, flash, redirect, send_from_directory, Markup
 from PIL import Image
 from DogBreedPredictor import DogBreedPredictor_v2
 import base64
@@ -53,8 +52,8 @@ def predict():
             print(display_image)
             full_filename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             print(full_filename)
-            #full_filename = "C:\work_local\Python\DataScientistND_Project6_Capstone_Project\Dog_Breed_App\uploads\Afghan_hound_00149.jpg"
-            #return render_template("index.html", user_image=full_filename)
-            #return render_template('predict.html', preds=" ".join(prediction), predicted_image=display_image)
-            return render_template('index.html', preds=" ".join(prediction), displayed_image=display_image)
+
+            display_image = Markup(f'<img src="{display_image}" alt="Image used for prediction" height="250">')
+
+            return render_template('show_prediction.html', prediction=" ".join(prediction), predicted_image=display_image)
     return render_template('index.html')
