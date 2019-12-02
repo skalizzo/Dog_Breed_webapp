@@ -8,20 +8,26 @@
 
 <!--import script files needed from plotly and bootstrap-->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT" crossorigin="anonymous"></script> 
+<link rel="stylesheet" href="/static/css/loader.css">
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-<script src="./dropzone.js"></script>
 <script>
 var loadFile = function(event) {
     var image = document.getElementById('output');
     image.src = URL.createObjectURL(event.target.files[0]);
 };
 </script>
+    <script>
+        function showLoader(){
+            $('.loader').show();
+            $('.loader_text').show();
+        }
+    </script>
 
 </head>
 
-<body onload="changeImage()">
+<body>
 
 <!--navbar links-->     
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
@@ -62,24 +68,27 @@ var loadFile = function(event) {
             <div class="form-group">
                 <label for="fileupload">Select Files:</label>
                 <input type="file" accept="image/*" name="file[]" multiple="" id='fileupload' onchange="loadFile(event)">
-                <p class="help-block">The prediction will take a couple of seconds. Think of something nice while you wait.
+                <p class="help-block">The prediction will take a couple of seconds.
                 </p>
                     <!--uploaded image will be displayed here-->
                 <p><img id="output" width="250" /></p>
                 <label class="btn btn-primary btn-lg">
                     Predict Dog Breed <input type="submit" value="Predict" style="display:
-                    none;">
+                    none;" onclick="showLoader()">
                 </label>
             </div>
         </form>
       </p>
+        <div class="container-fluid">
+        <!--error messages will be displayed here-->
+            <div>{{ error_message }}</div>
+        <div class="loader" style="display:none;"></div>
+        <div class="loader_text" style="display:none;">predicting...</div>
+        <!--predictions will be displayed here-->
+            {% block body %}{% endblock %}
+        </div>
 
-    <p><img id="displayed_imaged" width="250" /></p>
-    <p>{{ preds }}</p>
     </div>
-</div>
-<div class="container-fluid">
-    {% block body %}{% endblock %}
 </div>
 
 <!--footer section-->
